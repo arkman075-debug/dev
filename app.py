@@ -1,4 +1,5 @@
 import os
+import yt_dlp  # <--- THIS LINE IS MISSING
 from flask import Flask, render_template, request, send_file, jsonify
 from flask_cors import CORS
 
