@@ -1,5 +1,4 @@
 flask
-yt-dlp
 flask-cors
 gunicorn
 google-api-python-client
