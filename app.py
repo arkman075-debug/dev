@@ -1,32 +1,26 @@
 import os
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, jsonify
 from googleapiclient.discovery import build
-from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
 
-# Securely get the API Key from Render's environment
-API_KEY = os.environ.get('AIzaSyA2USsNtl7uUl520HnVlgovSVMA48HyboA')
-youtube = build('youtube', 'v3', developerKey=API_KEY)
+# 1. Get the key
+API_KEY = os.environ.get('YOUTUBE_API_KEY')
 
-def get_video_id(url):
-    # Simple helper to extract the ID from a YouTube URL
-    if 'v=' in url:
-        return url.split('v=')[1].split('&')[0]
-    elif 'be/' in url:
-        return url.split('be/')[1].split('?')[0]
-    return None
+# 2. Add a check to prevent the crash you saw
+if not API_KEY:
+    print("WARNING: YOUTUBE_API_KEY is not set in environment variables!")
+    youtube = None
+else:
+    # Use developerKey specifically to avoid the "Default Credentials" error
+    youtube = build('youtube', 'v3', developerKey=API_KEY)
 
 @app.route('/get_info', methods=['POST'])
 def get_info():
-    data = request.json
-    url = data.get('url')
-    video_id = get_video_id(url)
-
-    if not video_id:
-        return jsonify({"error": "Invalid YouTube URL"}), 400
-
+    if youtube is None:
+        return jsonify({"error": "API Key is missing on the server"}), 500
+    
+    # ... rest of your code ...
     try:
         # Call the official YouTube API
         request_api = youtube.videos().list(
