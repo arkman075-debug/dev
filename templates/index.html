@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced Video Downloader</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 50px auto; text-align: center; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; margin-top: 20px; }
+        img { max-width: 100%; border-radius: 5px; }
+        select, button, input { padding: 10px; margin: 10px; border-radius: 5px; border: 1px solid #ddd; }
+        button { background: #28a745; color: white; cursor: pointer; border: none; }
+        button:hover { background: #218838; }
+        #loading { display: none; color: blue; }
+    </style>
+</head>
+<body>
+
+    <h1>Pro Video Downloader</h1>
+    <input type="text" id="url" placeholder="Paste URL (YouTube, Twitter, etc.)" style="width: 80%;">
+    <button onclick="fetchInfo()">Analyze Link</button>
+
+    <div id="loading">Fetching video details...</div>
+
+    <div id="videoCard" class="card">
+        <h3 id="videoTitle"></h3>
+        <img id="videoThumb" src="" alt="thumbnail">
+        <br>
+        <label>Select Quality:</label>
+        <select id="formatSelect"></select>
+        <br>
+        <button onclick="startDownload()">Download Now</button>
+    </div>
+
+    <script>
+        async function fetchInfo() {
+            const url = document.getElementById('url').value;
+            const loading = document.getElementById('loading');
+            const card = document.getElementById('videoCard');
+            
+            if(!url) return alert("Paste a URL first!");
+
+            loading.style.display = "block";
+            card.style.display = "none";
+
+            const res = await fetch('/get_info', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ url })
+            });
+            const data = await res.json();
+            loading.style.display = "none";
+
+            if (data.error) {
+                alert("Error: " + data.error);
+            } else {
+                document.getElementById('videoTitle').innerText = data.title;
+                document.getElementById('videoThumb').src = data.thumbnail;
+                
+                const select = document.getElementById('formatSelect');
+                select.innerHTML = ""; // Clear old options
+                
+                // Add format options
+                data.formats.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.format_id;
+                    opt.innerText = `${f.resolution} (${f.ext})`;
+                    select.appendChild(opt);
+                });
+
+                card.style.display = "block";
+            }
+        }
+
+        async function startDownload() {
+            const url = document.getElementById('url').value;
+            const format_id = document.getElementById('formatSelect').value;
+            alert("Download starting... Please wait, the server is processing the video.");
+
+            const res = await fetch('/download', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ url, format_id })
+            });
+
+            if (res.ok) {
+                const blob = await res.blob();
+                const dlUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = dlUrl;
+                a.download = "video.mp4";
+                a.click();
+            } else {
+                alert("Download failed.");
+            }
+        }
+    </script>
+</body>
+</html>
