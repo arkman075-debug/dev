@@ -15,6 +15,10 @@ else:
     # Use developerKey specifically to avoid the "Default Credentials" error
     youtube = build('youtube', 'v3', developerKey=API_KEY)
 
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 @app.route('/get_info', methods=['POST'])
 def get_info():
     if youtube is None:
