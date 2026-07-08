@@ -5,7 +5,7 @@ from googleapiclient.discovery import build
 app = Flask(__name__)
 
 # 1. Get the key
-API_KEY = os.environ.get('YOUTUBE_API_KEY')
+API_KEY = os.environ.get('AIzaSyA2USsNtl7uUl520HnVlgovSVMA48HyboA')
 
 # 2. Add a check to prevent the crash you saw
 if not API_KEY:
