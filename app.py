@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Securely get the API Key from Render's environment
-API_KEY = os.environ.get('YOUTUBE_API_KEY')
+API_KEY = os.environ.get('AIzaSyA2USsNtl7uUl520HnVlgovSVMA48HyboA')
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 
 def get_video_id(url):
