@@ -1,10 +1,20 @@
 import os
-import yt_dlp
+import yt_dlp, ydl_opts
 from flask import Flask, render_template, request, send_file, jsonify, after_this_request
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+
+ydl_opts = {
+    'quiet': True,
+    'noplaylist': True,
+    'extractor_args': {
+        'youtube': {
+            'player_client': ['android', 'web_embedded']
+        }
+    }
+}
 
 # --- CONFIGURATION ---
 DOWNLOAD_FOLDER = 'downloads'
@@ -17,17 +27,21 @@ if not os.path.exists(DOWNLOAD_FOLDER):
 def home():
     return render_template('index.html')
 
+# Update the ydl_opts in BOTH functions to include 'cookiefile'
+
 @app.route('/get_info', methods=['POST'])
 def get_info():
     data = request.json
     url = data.get('url')
-
     if not url:
         return jsonify({"error": "URL is required"}), 400
     
     try:
-        # Use yt-dlp to get info instead of the Google API
-        ydl_opts = {'quiet': True, 'noplaylist': True}
+        ydl_opts = {
+            'quiet': True, 
+            'noplaylist': True,
+            'cookiefile': 'cookies.txt'  # <--- ADD THIS LINE
+        }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
@@ -37,24 +51,24 @@ def get_info():
             'channel': info.get('uploader'),
             'duration': info.get('duration_string')
         })
-
     except Exception as e:
-        return jsonify({"error": f"Could not fetch video info: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/download', methods=['POST'])
 def download_video():
     data = request.json
     video_url = data.get('url')
-
     if not video_url:
         return jsonify({"error": "URL is required"}), 400
 
-    # Using %(id)s avoids filename encoding errors
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(id)s.%(ext)s',
         'noplaylist': True,
+        'cookiefile': 'cookies.txt'  # <--- ADD THIS LINE
     }
+    
+    # ... rest of your download logic
     
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
