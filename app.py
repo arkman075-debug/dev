@@ -14,7 +14,7 @@ if not os.path.exists(DOWNLOAD_FOLDER):
 
 # 2. Get the API Key from Render environment variables
 # In Render, set a variable named YOUTUBE_API_KEY and paste your key there
-API_KEY = os.environ.get('')
+API_KEY = os.environ.get('YOUTUBE_API_KEY')
 
 if not API_KEY:
     print("WARNING: YOUTUBE_API_KEY environment variable is not set!")
